@@ -12,6 +12,7 @@ type User struct {
 	CreatedAt  time.Time `json:"created_at"`
 	ModifiedAt time.Time `json:"modified_at"`
 	Name       string    `json:"name"`
+	ApiKey     string    `json:"api_key"`
 }
 
 func returnPOST(u database.User) User {
@@ -21,5 +22,6 @@ func returnPOST(u database.User) User {
 		CreatedAt:  u.CreatedAt,
 		ModifiedAt: u.ModifiedAt,
 		Name:       u.Name,
+		ApiKey:     u.ApiKey,
 	}
 }
