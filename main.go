@@ -14,14 +14,14 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type apiConfig struct {
+	DB *database.Queries
+}
+
 func main() {
 	fmt.Println("Hello Word")
 
 	godotenv.Load()
-
-	type apiConfig struct {
-		DB *database.Queries
-	}
 
 	portString := os.Getenv("PORT")
 	if portString == "" {
@@ -55,20 +55,21 @@ func main() {
 		MaxAge:           300,
 	}))
 
+	v1Router := chi.NewRouter()
+	v1Router.Get("/healthz", handlerReadiness)
+	v1Router.Get("/Err", handlerErr)
+	v1Router.Post("/createUser", apiCfg.handlerCreateUser)
+
+	router.Mount("/v1", v1Router)
+
 	srv := &http.Server{
 		Handler: router,
 		Addr:    ":" + portString,
 	}
 
-	v1Router := chi.NewRouter()
-	v1Router.Get("/healthz", handlerReadiness)
-	v1Router.Get("/Err", handlerErr)
-	v1Router.Post("/createUser", apiCfg.handlerCreateUser())
-
-	router.Mount("/v1", v1Router)
-
 	log.Printf("Server starting on port: %v", portString)
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
+
 	if err != nil {
 		log.Fatal(err)
 	}
