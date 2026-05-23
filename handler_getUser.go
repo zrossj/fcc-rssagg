@@ -1,27 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
-	"gibhub.com/jzross/rssagg/internal/tools"
+	"gibhub.com/jzross/rssagg/internal/database"
 )
 
-func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request) {
-
-	apikey, err := tools.GetUserAPIKEY(r.Header)
-
-	if err != nil {
-		respondWithError(w, 401, fmt.Sprintf("Error in authentication: %v", err))
-		return
-	}
-
-	userData, err := apiCfg.DB.GetUser(r.Context(), apikey)
-
-	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Could't get user: %v", err))
-		return
-	}
-
-	respondWithJSON(w, 200, returnPOST(userData))
+func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, u database.User) {
+	respondWithJSON(w, 200, returnPOST(u))
 }

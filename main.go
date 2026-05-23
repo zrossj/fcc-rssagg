@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"gibhub.com/jzross/rssagg/internal/database"
 	"github.com/go-chi/chi/v5"
@@ -38,11 +39,15 @@ func main() {
 		log.Fatal("Can't connect to database")
 	}
 
+	db := database.New(conn)
+
 	apiCfg := apiConfig{
-		DB: database.New(conn),
+		DB: db,
 	}
 
 	fmt.Println("Port: ", portString)
+
+	go ScraperTriggerRoutine(db, time.Duration(30*time.Minute), 10)
 
 	router := chi.NewRouter()
 
@@ -59,7 +64,13 @@ func main() {
 	v1Router.Get("/healthz", handlerReadiness)
 	v1Router.Get("/Err", handlerErr)
 	v1Router.Post("/createUser", apiCfg.handlerCreateUser)
-	v1Router.Get("/createUser", apiCfg.handlerGetUser)
+	v1Router.Get("/createUser", apiCfg.middleware(apiCfg.handlerGetUser))
+	v1Router.Post("/createFeed", apiCfg.middleware(apiCfg.handleCreateFeed))
+	v1Router.Get("/createFeed", apiCfg.getFeeds)
+
+	v1Router.Post("/subscribeFeed", apiCfg.middleware(apiCfg.handleSubsToFeed))
+	v1Router.Get("/subscribeFeed", apiCfg.middleware(apiCfg.handlerGetUserFeeds))
+	v1Router.Delete("/subscribeFeed/{FeedID}", apiCfg.middleware(apiCfg.handleDeleteSub))
 
 	router.Mount("/v1", v1Router)
 
