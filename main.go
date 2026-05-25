@@ -72,6 +72,8 @@ func main() {
 	v1Router.Get("/subscribeFeed", apiCfg.middleware(apiCfg.handlerGetUserFeeds))
 	v1Router.Delete("/subscribeFeed/{FeedID}", apiCfg.middleware(apiCfg.handleDeleteSub))
 
+	v1Router.Get("/posts", apiCfg.middleware(apiCfg.handleGetRecentPosts))
+
 	router.Mount("/v1", v1Router)
 
 	srv := &http.Server{

@@ -81,3 +81,41 @@ func databaseUserFeedsToUserFeeds(ufeeds []database.Feedsub) []SubFeed {
 	}
 	return vals
 }
+
+type GetLastPosts struct {
+	ID          uuid.UUID `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Title       string    `json:"title"`
+	Description *string   `json:"description"`
+	PublishedAt time.Time `json:"published_at"`
+	Url         string    `json:"url"`
+	FeedID      uuid.UUID `json:"feed_id"`
+}
+
+func databasePostToPosts(posts []database.Post) []GetLastPosts {
+
+	var formatedPosts []GetLastPosts
+	var descrip *string
+
+	for _, post := range posts {
+
+		if post.Description.Valid {
+			descrip = &post.Description.String
+		}
+
+		formatedPosts = append(
+			formatedPosts,
+			GetLastPosts{
+				ID:          post.ID,
+				CreatedAt:   post.CreatedAt,
+				UpdatedAt:   post.UpdatedAt,
+				Title:       post.Title,
+				Description: descrip,
+				PublishedAt: post.PublishedAt,
+				Url:         post.Url,
+				FeedID:      post.FeedID,
+			})
+	}
+	return formatedPosts
+}

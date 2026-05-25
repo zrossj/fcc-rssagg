@@ -7,7 +7,6 @@ RETURNING *;
 -- name: GetUserFeeds :many
 SELECT * FROM feedsubs f where f.user_id = $1;
 
-
 -- name: DeleteUserSub :exec
 DELETE FROM feedsubs f 
 where f.user_id = $1 and f.feed_id = $2; 

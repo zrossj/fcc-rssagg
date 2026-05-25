@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
 	"gibhub.com/jzross/rssagg/internal/database"
+	"github.com/google/uuid"
 )
 
 //it will be on a go routine. it'll search for feeds table to get the oldests feeds that were updated and
@@ -38,11 +40,10 @@ func scraper(q *database.Queries, feed database.Feed, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	// update the last update col for rss;
-	feedUpdate, err := q.UpdateLastFetched(context.Background(), feed.ID)
+	_, err := q.UpdateLastFetched(context.Background(), feed.ID)
 	if err != nil {
 		log.Printf("Some error while updating the feed's last updated date: %v", err)
 	}
-	fmt.Printf("Feed updated: %v", feedUpdate)
 
 	// get data with the url from feed struct.
 	rssfeed, err := getRSSFeed(feed.Url)
@@ -50,5 +51,35 @@ func scraper(q *database.Queries, feed database.Feed, wg *sync.WaitGroup) {
 		log.Printf("Error in getting RSS: %v", err)
 	}
 
-	fmt.Print(rssfeed)
+	for _, item := range rssfeed.Channel.Item {
+		descrip := sql.NullString{}
+		if item.Description != "" {
+			descrip.String = item.Description
+			descrip.Valid = true
+		}
+		pubDate, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			log.Printf("Couldn't parse date %v to desired format. Error: %v", item.PubDate, err)
+		}
+
+		_, err = q.InsertPosts(context.Background(),
+			database.InsertPostsParams{
+				ID:          uuid.New(),
+				CreatedAt:   time.Now().UTC(),
+				UpdatedAt:   time.Now().UTC(),
+				Title:       item.Title,
+				Description: descrip,
+				PublishedAt: pubDate, // need to cast
+				Url:         item.Link,
+				FeedID:      feed.ID,
+			})
+
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key") {
+				continue
+			}
+			log.Printf("Error while trying to fetch post on db: %v", err)
+		}
+	}
+	log.Printf("Feed %v collected. Found %v posts", feed.Name, len(rssfeed.Channel.Item))
 }
