@@ -45,8 +45,6 @@ func main() {
 		DB: db,
 	}
 
-	fmt.Println("Port: ", portString)
-
 	go ScraperTriggerRoutine(db, time.Duration(30*time.Minute), 10)
 
 	router := chi.NewRouter()

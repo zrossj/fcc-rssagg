@@ -35,7 +35,7 @@ func (apiCfg *apiConfig) handleSubsToFeed(w http.ResponseWriter, r *http.Request
 
 	if err != nil {
 		respondWithError(
-			w, 401, fmt.Sprintf("Some error while creating the feed on DB: %v", err))
+			w, 400, fmt.Sprintf("Some error while creating the feed on DB: %v", err))
 	}
 
 	respondWithJSON(w, 200, databaseFeedFollowToFeedFollow(feed))
@@ -56,7 +56,7 @@ func (apiCfg *apiConfig) handleDeleteSub(w http.ResponseWriter, r *http.Request,
 
 	if err != nil {
 		respondWithError(
-			w, 401, fmt.Sprintf("Error while trying to unscribe user from feed: %v", err))
+			w, 400, fmt.Sprintf("Error while trying to unscribe user from feed: %v", err))
 	}
 
 	respondWithJSON(w, 200, struct{}{})

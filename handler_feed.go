@@ -37,7 +37,7 @@ func (apiCfg *apiConfig) handleCreateFeed(w http.ResponseWriter, r *http.Request
 
 	if err != nil {
 		respondWithError(
-			w, 401, fmt.Sprintf("Some error while creating the feed on DB: %v", err))
+			w, 400, fmt.Sprintf("Some error while creating the feed on DB: %v", err))
 	}
 
 	respondWithJSON(w, 200, databaseFeedToFeed(feed))
@@ -48,7 +48,7 @@ func (apiCfg apiConfig) getFeeds(w http.ResponseWriter, r *http.Request) {
 	feedsData, err := apiCfg.DB.GetFeeds(r.Context())
 
 	if err != nil {
-		respondWithError(w, 401, fmt.Sprintf("Some error gathering data from DB: %v", err))
+		respondWithError(w, 400, fmt.Sprintf("Some error gathering data from DB: %v", err))
 		return
 	}
 	respondWithJSON(w, 200, databaseFeedsToFeeds(feedsData))

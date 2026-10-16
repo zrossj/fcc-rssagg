@@ -54,7 +54,7 @@ func (apiCfg *apiConfig) handleGetRecentPosts(w http.ResponseWriter, r *http.Req
 			Limit: 10,
 		})
 	if err != nil {
-		respondWithError(w, 401, fmt.Sprintf("Errro while trying to get last posts for user. %v", err))
+		respondWithError(w, 401, fmt.Sprintf("Error while trying to get recent posts for user. %v", err))
 	}
 
 	respondWithJSON(w, 200, databasePostToPosts(recentPosts))
